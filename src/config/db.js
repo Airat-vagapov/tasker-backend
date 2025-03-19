@@ -1,4 +1,10 @@
-const { dbUser,dbHost, database, dbPassword, dbPort } = require('../config/env')
+const {
+    dbUser,
+    dbHost,
+    database,
+    dbPassword,
+    dbPort,
+} = require("../config/env");
 const { Client } = require("pg");
 
 const client = new Client({
@@ -9,4 +15,12 @@ const client = new Client({
     port: dbPort,
 });
 
-module.exports = client;
+const connectDB = async () => {
+    await client.connect();
+    console.log("Connected to PostgreSQL");
+
+    const result = await client.query("SELECT NOW()");
+    console.log("Connected to PostgreSQL at:", result.rows[0].now);
+};
+
+module.exports = { client, connectDB };
