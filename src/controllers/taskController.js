@@ -12,8 +12,18 @@ const getAllTasks = async (req, res) => {
 };
 
 const addTask = async (req, res) => {
-    res.status(200).json({ status: "200", result: 'ok' });
-    await createTask(req.body.text);
+    if (req.body.text == "") {
+        res.status(400).json({ status: "400", message: "Tast text is empty" });
+        return;
+    }
+
+    try {
+        await createTask(req.body.text);
+        res.status(200).json({ status: "200", result: "ok" });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ message: err.message });
+    }
 };
 
 module.exports = { getAllTasks, addTask };
