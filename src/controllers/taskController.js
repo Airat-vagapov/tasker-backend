@@ -12,8 +12,8 @@ const getAllTasks = async (req, res) => {
 };
 
 const addTask = async (req, res) => {
-    console.log(`req is ${req}`);
-    await createTask();
+    res.status(200).json({ status: "200", result: 'ok' });
+    await createTask(req.body.text);
 };
 
 module.exports = { getAllTasks, addTask };

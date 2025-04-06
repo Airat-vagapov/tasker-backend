@@ -10,7 +10,6 @@ const createTask = async (text) => {
         "INSERT INTO tasks (name) VALUES ($1) RETURNING *",
         [text]
     );
-    console.log(res);
     return res;
 };
 
