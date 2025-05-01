@@ -13,7 +13,7 @@ const getAllTasks = async (req, res) => {
 
 const addTask = async (req, res) => {
     if (req.body.text == "") {
-        res.status(400).json({ status: "400", message: "Tast text is empty" });
+        res.status(400).json({ status: "400", message: "Task text is empty" });
         return;
     }
 
