@@ -5,13 +5,14 @@ const getTasks = async () => {
     return res;
 };
 
-const createTask = async (text) => {
-    const res = await client.query(
-        "INSERT INTO tasks (title) VALUES ($1) RETURNING *",
-        [text]
-    );
-    console.log(res)
-    return res;
+const createTask = async (task) => {
+    console.log(task)
+    // const res = await client.query(
+    //     "INSERT INTO tasks (title) VALUES ($1) RETURNING *",
+    //     [text]
+    // );
+    // console.log(res)
+    // return res;
 };
 
 module.exports = { getTasks, createTask };
