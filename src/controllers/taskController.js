@@ -17,8 +17,6 @@ const addTask = async (req, res) => {
         return;
     }
 
-    console.log(req.body)
-
     try {
         await createTask(req.body);
         res.status(200).json({ status: "200", result: "ok" });
