@@ -11,7 +11,7 @@ async function startServer(app) {
         await connectDB();
 
         // Разрешить запросы с любого origin (для разработки)
-        app.use(cors());
+        // app.use(cors());
 
         // Или разрешить только с конкретного origin
         app.use(
