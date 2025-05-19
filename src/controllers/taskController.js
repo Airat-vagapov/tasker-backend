@@ -31,7 +31,7 @@ const getTaskById = async (req, res) => {
         res.status(200).json({ status: "200", result: data[0] });
     } catch (err) {
         console.log(err);
-        res.status(500).json({ message: 'err.message' });
+        res.status(500).json({ status: "200", message: 'err.message' });
     }
 }
 

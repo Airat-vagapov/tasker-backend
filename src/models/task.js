@@ -15,7 +15,7 @@ const createTask = async (task) => {
 };
 
 const getTask = async (id) => {
-    const res = await client.query("SELECT * 1FROM tasks WHERE id = $1", [id])
+    const res = await client.query("SELECT * FROM tasks WHERE id = $1", [id])
     return res.rows;
 }
 
