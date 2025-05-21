@@ -15,8 +15,39 @@ const createTask = async (task) => {
 };
 
 const getTask = async (id) => {
-    const res = await client.query("SELECT * FROM tasks WHERE id = $1", [id])
+    // const res = await client.query(`
+    // SELECT * FROM tasks WHERE id = $1`,
+    // [id])
+    const res = await client.query(`
+    SELECT t.*, s.name as status
+    FROM tasks t
+    JOIN statuses s ON t.status_id = s.id
+    WHERE t.id = $1`,
+        [id])
+    console.log(res.rows)
     return res.rows;
 }
 
-module.exports = { getTasks, createTask, getTask };
+const updateTask = async (id, task) => {
+    const setClauses = [];
+    const values = [];
+    let idx = 1;
+
+    for (const [key, value] of Object.entries(task)) {
+        setClauses.push(`${key} = $${idx}`);
+        values.push(value);
+        idx++;
+    }
+
+
+    await client.query(
+        `
+        UPDATE tasks
+        SET ${setClauses.join(", ")}
+        WHERE id = $${id}
+        RETURNING *;
+        `
+    )
+}
+
+module.exports = { getTasks, createTask, getTask, updateTask };

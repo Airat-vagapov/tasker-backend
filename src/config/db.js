@@ -9,11 +9,6 @@ const {
 const { Client } = require("pg");
 
 const client = new Client({
-    // user: dbUser,
-    // host: dbHost,
-    // database: database,
-    // password: dbPassword,
-    // port: dbPort,
     connectionString: dbUrl,
     ssl: {
         rejectUnauthorized: false
@@ -25,10 +20,10 @@ const connectDB = async () => {
 
     const result = await client.query("SELECT NOW()");
     console.log("Connected to PostgreSQL at:", result.rows[0].now);
-    createTable();
+    createTables();
 };
 
-const createTable = async () => {
+const createTables = async () => {
     try {
         await client.query(`CREATE TABLE IF NOT EXISTS tasks (
             id SERIAL PRIMARY KEY,
@@ -41,7 +36,13 @@ const createTable = async () => {
             updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
             due_date TIMESTAMP WITH TIME ZONE DEFAULT (CURRENT_TIMESTAMP + INTERVAL '1 week')
         );`)
-        console.log('Таблица успешно создана или уже есть существующая');
+        console.log('Таблица TASKS успешно создана или уже есть существующая');
+
+        await client.query(`CREATE TABLE IF NOT EXISTS statuses (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(50) UNIQUE NOT NULL
+        );`)
+        console.log('Таблица STATUSES успешно создана или уже есть существующая');
     }
     catch (err) {
         console.error('Ошибка при создании таблицы', err)

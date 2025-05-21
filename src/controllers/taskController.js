@@ -1,4 +1,4 @@
-const { getTasks, createTask, getTask } = require("../models/task");
+const { getTasks, createTask, getTask, updateTask } = require("../models/task");
 
 const getAllTasks = async (req, res) => {
     try {
@@ -35,4 +35,15 @@ const getTaskById = async (req, res) => {
     }
 }
 
-module.exports = { getAllTasks, addTask, getTaskById };
+const updateTaskData = async (req, res) => {
+    try {
+        console.log(req)
+        console.log(req.params)
+        console.log(req.body)
+        // const data = await updateTask(req.body);
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+module.exports = { getAllTasks, addTask, getTaskById, updateTaskData };
