@@ -1,7 +1,11 @@
 const { client } = require("../config/db");
 
 const getTasks = async () => {
-    const res = await client.query("SELECT * FROM tasks");
+    const res = await client.query(`
+    SELECT t.*, s.name as status
+    FROM tasks t
+    JOIN statuses s ON t.status_id = s.id
+    `);
     return res;
 };
 
