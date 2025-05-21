@@ -35,6 +35,7 @@ const createTables = async () => {
             created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
             due_date TIMESTAMP WITH TIME ZONE DEFAULT (CURRENT_TIMESTAMP + INTERVAL '1 week')
+            status_id INTEGER REFERENCES statuses(id) SET DEFAULT 1,
         );`)
         console.log('Таблица TASKS успешно создана или уже есть существующая');
 
