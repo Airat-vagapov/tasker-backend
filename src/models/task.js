@@ -30,20 +30,20 @@ const updateTask = async (id, task) => {
     let idx = 1;
 
     for (const [key, value] of Object.entries(task)) {
+        if (key === 'status') continue
         setClauses.push(`${key} = $${idx}`);
         values.push(value);
         idx++;
     }
-
-
     await client.query(
         `
         UPDATE tasks
         SET ${setClauses.join(", ")}
-        WHERE id = $${id}
+        WHERE id = ${id}
         RETURNING *;
-        `
+        `, values
     )
+    return await getTask(id)
 }
 
 module.exports = { getTasks, createTask, getTask, updateTask };

@@ -31,18 +31,17 @@ const getTaskById = async (req, res) => {
         res.status(200).json({ status: "200", result: data[0] });
     } catch (err) {
         console.log(err);
-        res.status(500).json({ status: "200", message: 'err.message' });
+        res.status(500).json({ status: "500", message: err.message });
     }
 }
 
 const updateTaskData = async (req, res) => {
     try {
-        console.log(req)
-        console.log(req.params)
-        console.log(req.body)
-        // const data = await updateTask(req.body);
+        const data = await updateTask(req.params.id, req.body.task);
+        res.status(200).json({ status: "200", result: data });
     } catch (err) {
         console.log(err);
+        res.status(500).json({ status: "500", message: err.message });
     }
 }
 
