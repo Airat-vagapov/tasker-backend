@@ -15,16 +15,12 @@ const createTask = async (task) => {
 };
 
 const getTask = async (id) => {
-    // const res = await client.query(`
-    // SELECT * FROM tasks WHERE id = $1`,
-    // [id])
     const res = await client.query(`
     SELECT t.*, s.name as status
     FROM tasks t
     JOIN statuses s ON t.status_id = s.id
     WHERE t.id = $1`,
         [id])
-    console.log(res.rows)
     return res.rows;
 }
 
