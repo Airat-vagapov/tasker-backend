@@ -50,4 +50,10 @@ const updateTask = async (id, task) => {
     return await getTask(id)
 }
 
-module.exports = { getTasks, createTask, getTask, updateTask };
+const deleteTaskById = (id) => {
+    const res = client.query(`DELETE FROM tasks WHERE id = $1`, [id]);
+    console.log(res)
+    return res.rows;
+}
+
+module.exports = { getTasks, createTask, getTask, updateTask, deleteTaskById };

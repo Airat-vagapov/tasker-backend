@@ -1,4 +1,4 @@
-const { getTasks, createTask, getTask, updateTask } = require("../models/task");
+const { getTasks, createTask, getTask, updateTask, deleteTaskById } = require("../models/task");
 
 const getAllTasks = async (req, res) => {
     try {
@@ -45,4 +45,14 @@ const updateTaskData = async (req, res) => {
     }
 }
 
-module.exports = { getAllTasks, addTask, getTaskById, updateTaskData };
+const deleteTask = async (req, res) => {
+    try {
+        const data = await deleteTaskById(req.params.id);
+        res.status(200).json({ status: "200", result: data });
+    } catch (err) {
+        console.log(err)
+        res.status(500).json * ({ status: "500", message: err.message });
+    }
+}
+
+module.exports = { getAllTasks, addTask, getTaskById, updateTaskData, deleteTask };
