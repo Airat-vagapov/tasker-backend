@@ -14,7 +14,6 @@ const createTask = async (task) => {
         "INSERT INTO tasks (title, description, priority) VALUES ($1,$2,$3) RETURNING *",
         [task.title, task.description, task.priority]
     );
-    console.log(res)
     return res;
 };
 

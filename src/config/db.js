@@ -1,9 +1,9 @@
 const {
-    dbUser,
-    dbHost,
-    database,
-    dbPassword,
-    dbPort,
+    // dbUser,
+    // dbHost,
+    // database,
+    // dbPassword,
+    // dbPort,
     dbUrl,
 } = require("../config/env");
 const { Client } = require("pg");
@@ -25,6 +25,12 @@ const connectDB = async () => {
 
 const createTables = async () => {
     try {
+        await client.query(`CREATE TABLE IF NOT EXISTS statuses (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(50) UNIQUE NOT NULL
+        );`)
+        console.log('Таблица STATUSES успешно создана или уже есть существующая');
+
         await client.query(`CREATE TABLE IF NOT EXISTS tasks (
             id SERIAL PRIMARY KEY,
             title TEXT NOT NULL,
@@ -39,11 +45,7 @@ const createTables = async () => {
         );`)
         console.log('Таблица TASKS успешно создана или уже есть существующая');
 
-        await client.query(`CREATE TABLE IF NOT EXISTS statuses (
-            id SERIAL PRIMARY KEY,
-            name VARCHAR(50) UNIQUE NOT NULL
-        );`)
-        console.log('Таблица STATUSES успешно создана или уже есть существующая');
+        
     }
     catch (err) {
         console.error('Ошибка при создании таблицы', err)
