@@ -36,7 +36,6 @@ const createTables = async () => {
             title TEXT NOT NULL,
             description TEXT,
             author TEXT DEFAULT 'admin',
-            status VARCHAR(50) NOT NULL DEFAULT 'new',
             priority VARCHAR(50) NOT NULL DEFAULT 'medium',
             created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,

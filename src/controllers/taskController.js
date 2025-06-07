@@ -1,4 +1,4 @@
-const { getTasks, createTask, getTask, updateTask, deleteTaskById } = require("../models/task");
+const { getTasks, createTask, getTask, updateTask, deleteTaskById, getTasksByStatusId } = require("../models/task");
 
 const getAllTasks = async (req, res) => {
     try {
@@ -55,4 +55,18 @@ const deleteTask = async (req, res) => {
     }
 }
 
-module.exports = { getAllTasks, addTask, getTaskById, updateTaskData, deleteTask };
+const getTaskByStatus = async (req, res) => {
+    console.log(`Получение задач со статусом ${req.params.statusId}`);
+    try {
+        const data = await getTasksByStatusId(req.params.statusId);
+        console.log(data)
+        res.status(200).json({ status: "200", result: data });
+    }
+    catch (err) {
+        console.log(err);
+        res.status(500).json({ status: "500", message: err.message });
+    }
+
+}
+
+module.exports = { getAllTasks, addTask, getTaskById, updateTaskData, deleteTask, getTaskByStatus };

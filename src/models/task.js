@@ -49,10 +49,17 @@ const updateTask = async (id, task) => {
     return await getTask(id)
 }
 
-const deleteTaskById = (id) => {
-    const res = client.query(`DELETE FROM tasks WHERE id = $1`, [id]);
+const deleteTaskById = async (id) => {
+    const res = await client.query(`DELETE FROM tasks WHERE id = $1`, [id]);
     console.log(res)
     return res.rows;
 }
 
-module.exports = { getTasks, createTask, getTask, updateTask, deleteTaskById };
+const getTasksByStatusId = async (statusId) => {
+    console.log(statusId)
+    const res = await client.query(`SELECT * FROM tasks WHERE status_id=$1`, [statusId]);
+    console.log(res.rows);
+    return res.rows;
+}
+
+module.exports = { getTasks, createTask, getTask, updateTask, deleteTaskById, getTasksByStatusId };
