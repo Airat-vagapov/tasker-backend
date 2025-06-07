@@ -56,7 +56,6 @@ const deleteTaskById = async (id) => {
 }
 
 const getTasksByStatusId = async (statusId) => {
-    console.log(statusId)
     const res = await client.query(`
     SELECT tasks.*, s.name as status 
     FROM tasks 

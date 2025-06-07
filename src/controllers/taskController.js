@@ -56,7 +56,6 @@ const deleteTask = async (req, res) => {
 }
 
 const getTaskByStatus = async (req, res) => {
-    console.log(`Получение задач со статусом ${req.params.statusId}`);
     try {
         const data = await getTasksByStatusId(req.params.statusId);
         console.log(data)
