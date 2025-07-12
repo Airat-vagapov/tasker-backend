@@ -57,7 +57,13 @@ const deleteTask = async (req, res) => {
 
 const getTaskByStatus = async (req, res) => {
     try {
-        const data = await getTasksByStatusId(req.params.statusId);
+        if (!req.query.id) {
+            return res.status(400).json({ status: "400", message: "Status ID is required" });
+        }
+
+        const statuses = req.query.id.split(',').map(id => parseInt(id.trim()))
+
+        const data = await getTasksByStatusId(statuses);
         console.log(data)
         res.status(200).json({ status: "200", result: data });
     }
@@ -65,7 +71,6 @@ const getTaskByStatus = async (req, res) => {
         console.log(err);
         res.status(500).json({ status: "500", message: err.message });
     }
-
 }
 
 module.exports = { getAllTasks, addTask, getTaskById, updateTaskData, deleteTask, getTaskByStatus };

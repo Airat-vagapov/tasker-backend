@@ -55,13 +55,18 @@ const deleteTaskById = async (id) => {
     return res.rows;
 }
 
-const getTasksByStatusId = async (statusId) => {
+const getTasksByStatusId = async (statusIds) => {
+    console.log(statusIds)
+    // const ids = Array.isArray(statusIds) ? statusIds : [statusIds];
+
+    const placeholders = statusIds.map((_, i) => `$${i + 1}`).join(',')
+
     const res = await client.query(`
     SELECT tasks.*, s.name as status 
     FROM tasks 
     JOIN statuses s ON tasks.status_id = s.id 
-    WHERE tasks.status_id = $1
-    `, [statusId]);
+    WHERE tasks.status_id IN (${placeholders})
+    `, statusIds);
     console.log(res.rows);
     return res.rows;
 }

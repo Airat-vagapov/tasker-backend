@@ -8,6 +8,6 @@ taskRouter.post("/task", addTask);
 taskRouter.get("/task/:id", getTaskById);
 taskRouter.post("/task/:id", updateTaskData);
 taskRouter.delete("/task/:id", deleteTask)
-taskRouter.get("/tasks/status/:statusId", getTaskByStatus);
+taskRouter.get("/tasks/status/", getTaskByStatus);
 
 module.exports = taskRouter;
