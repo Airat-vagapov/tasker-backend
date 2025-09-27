@@ -66,6 +66,7 @@ const getTasksByStatusId = async (statusIds) => {
     FROM tasks 
     JOIN statuses s ON tasks.status_id = s.id 
     WHERE tasks.status_id IN (${placeholders})
+    ORDER BY tasks.id DESC
     `, statusIds);
     console.log(res.rows);
     return res.rows;
