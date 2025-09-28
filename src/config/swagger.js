@@ -19,34 +19,3 @@ const generateSwaggerDocs = () => {
 }
 
 module.exports = { generateSwaggerDocs }
-
-
-// module.exports = swaggerAutogen(outputFile, endpointsFiles, doc)
-
-// swaggerAutogen(outputFile, endpointsFiles, doc).then(() => {
-//     require('../app'); // Запускает ваше приложение после генерации
-// });
-// const swaggerDefinition = {
-//     openapi: '3.0.0',
-//     info: {
-//         title: 'My API',
-//         version: '1.0.0',
-//         description: 'API documentation using Swagger',
-//     },
-//     servers: [
-//         {
-//             url: 'http://localhost:8000',
-//         },
-//     ],
-// }
-
-// const options = {
-//     swaggerDefinition,
-//     apis: [
-//         './routes/*.js',
-//         // './docs/**/*.yaml',
-//         // './docs/**/*.yml'
-//     ],
-// };
-
-// module.exports = swaggerJSDoc(options)
