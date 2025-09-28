@@ -3,6 +3,9 @@ const { connectDB } = require("./config/db");
 const express = require("express");
 const taskRouter = require("./routes/taskRoutes");
 const cors = require('cors');
+const swaggerUi = require('swagger-ui-express');
+// const swaggerSpec = require('./config/swagger')
+const swaggerFile = require('./swagger-output.json')
 
 const { createTask } = require("./models/task");
 
@@ -24,9 +27,15 @@ async function startServer(app) {
 
         app.use("/", taskRouter);
 
+        // Swagger docs
+        app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerFile))
+
         app.listen(port, () => {
             console.log(`Server is running on port ${port}`);
         });
+
+
+
     } catch (err) {
         console.error("Error connecting to PostgreSQL:", err);
         console.log(err);
