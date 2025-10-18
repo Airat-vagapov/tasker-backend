@@ -4,7 +4,6 @@ const express = require("express");
 const taskRouter = require("./routes/taskRoutes");
 const cors = require('cors');
 const swaggerUi = require('swagger-ui-express');
-// const swaggerSpec = require('./config/swagger')
 const swaggerFile = require('./swagger-output.json')
 
 const { createTask } = require("./models/task");
