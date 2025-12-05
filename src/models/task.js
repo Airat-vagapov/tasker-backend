@@ -51,12 +51,10 @@ const updateTask = async (id, task) => {
 
 const deleteTaskById = async (id) => {
     const res = await client.query(`DELETE FROM tasks WHERE id = $1`, [id]);
-    console.log(res)
     return res.rows;
 }
 
 const getTasksByStatusId = async (statusIds) => {
-    console.log(statusIds)
     // const ids = Array.isArray(statusIds) ? statusIds : [statusIds];
 
     const placeholders = statusIds.map((_, i) => `$${i + 1}`).join(',')
@@ -68,7 +66,6 @@ const getTasksByStatusId = async (statusIds) => {
     WHERE tasks.status_id IN (${placeholders})
     ORDER BY tasks.id DESC
     `, statusIds);
-    console.log(res.rows);
     return res.rows;
 }
 

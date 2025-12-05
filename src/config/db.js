@@ -1,9 +1,4 @@
 const {
-    // dbUser,
-    // dbHost,
-    // database,
-    // dbPassword,
-    // dbPort,
     dbUrl,
 } = require("../config/env");
 const { Client } = require("pg");

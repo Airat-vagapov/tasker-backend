@@ -1,8 +1,9 @@
-const { getTasks, createTask, getTask, updateTask, deleteTaskById, getTasksByStatusId } = require("../models/task");
+const { createTask, getTask, updateTask, deleteTaskById, getTasksByStatusId } = require("../models/task");
+const taskService = require('../service/taskService')
 
 const getAllTasks = async (req, res) => {
     try {
-        const tasks = await getTasks();
+        const tasks = await taskService.getAllTasks();
         res.status(200).json({ status: "200", result: tasks.rows });
     } catch (err) {
         console.log(err);
@@ -11,15 +12,13 @@ const getAllTasks = async (req, res) => {
 };
 
 const addTask = async (req, res) => {
-    if (req.body.text == "") {
-        res.status(400).json({ status: "400", message: "Task text is empty" });
-        return;
-    }
-
     try {
-        await createTask(req.body);
+        await taskService.addTask(req.body);
         res.status(200).json({ status: "200", result: "ok" });
     } catch (err) {
+        if (err.message.includes('required')) {
+            return res.status('400').json({ status: "400", message: err.message })
+        }
         console.log(`Ошибка при запросе - ${err}`);
         res.status(500).json({ message: err });
     }
@@ -27,7 +26,7 @@ const addTask = async (req, res) => {
 
 const getTaskById = async (req, res) => {
     try {
-        const data = await getTask(req.params.id)
+        const data = await taskService.getTaskById(req.params.id)
         res.status(200).json({ status: "200", result: data[0] });
     } catch (err) {
         console.log(err);
@@ -37,7 +36,7 @@ const getTaskById = async (req, res) => {
 
 const updateTaskData = async (req, res) => {
     try {
-        const data = await updateTask(req.params.id, req.body.task);
+        const data = await taskService.updateTask(req.params.id, req.body.task);
         res.status(200).json({ status: "200", result: data });
     } catch (err) {
         console.log(err);
@@ -47,7 +46,7 @@ const updateTaskData = async (req, res) => {
 
 const deleteTask = async (req, res) => {
     try {
-        const data = await deleteTaskById(req.params.id);
+        const data = await taskService.deleteTaskById(req.params.id);
         res.status(200).json({ status: "200", result: data });
     } catch (err) {
         console.log(err)
@@ -63,7 +62,7 @@ const getTaskByStatus = async (req, res) => {
 
         const statuses = req.query.id.split(',').map(id => parseInt(id.trim()))
 
-        const data = await getTasksByStatusId(statuses);
+        const data = await taskService.getTaskByStatus(statuses);
         console.log(data)
         res.status(200).json({ status: "200", result: data });
     }
