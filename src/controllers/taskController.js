@@ -1,9 +1,16 @@
-const { createTask, getTask, updateTask, deleteTaskById, getTasksByStatusId } = require("../models/task");
 const taskService = require('../service/taskService')
 
-const getAllTasks = async (req, res) => {
+const getTasks = async (req, res) => {
     try {
-        const tasks = await taskService.getAllTasks();
+        // const { status, sortBy, order } = req.query
+        // console.log(req.query)
+        const filters = {
+            status: req.query.status,
+            sortBy: req.query.sortBy,
+            order: req.query.order,
+            search: req.query.search,
+        }
+        const tasks = await taskService.getAllTasks(filters);
         res.status(200).json({ status: "200", result: tasks.rows });
     } catch (err) {
         console.log(err);
@@ -72,4 +79,4 @@ const getTaskByStatus = async (req, res) => {
     }
 }
 
-module.exports = { getAllTasks, addTask, getTaskById, updateTaskData, deleteTask, getTaskByStatus };
+module.exports = { getTasks, addTask, getTaskById, updateTaskData, deleteTask, getTaskByStatus };

@@ -1,11 +1,36 @@
 const { client } = require("../config/db");
+const { search } = require("../routes/taskRoutes");
 
-const getTasks = async () => {
-    const res = await client.query(`
+const getTasks = async (statusIds, sortField, sortOrder) => {
+    const whereParts = []
+    const values = []
+    let idx = 1
+    if (statusIds && statusIds.length) {
+        whereParts.push(`t.status_id = ANY($${idx})`);
+        values.push(statusIds);
+        idx++;
+    }
+
+    if (search) {
+        whereParts.push(`(t.title) ILIKE $${idx} AND t.description ILIKE $${idx})`)
+        values.push(`%${search}%`)
+        idx++;
+    }
+
+    // Сбор условий для запроса
+    const whereClause = whereParts.length
+        ? `WHERE ${whereParts.join(' AND ')}`
+        : '';
+
+    const query = `
     SELECT t.*, s.name as status
     FROM tasks t
     JOIN statuses s ON t.status_id = s.id
-    `);
+    ${whereClause}
+    ORDER BY ${sortField} ${sortOrder}
+    `
+
+    const res = await client.query(query, values);
     return res;
 };
 
@@ -55,8 +80,6 @@ const deleteTaskById = async (id) => {
 }
 
 const getTasksByStatusId = async (statusIds) => {
-    // const ids = Array.isArray(statusIds) ? statusIds : [statusIds];
-
     const placeholders = statusIds.map((_, i) => `$${i + 1}`).join(',')
 
     const res = await client.query(`
