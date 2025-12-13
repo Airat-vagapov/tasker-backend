@@ -12,7 +12,7 @@ const getTasks = async (statusIds, sortField, sortOrder) => {
     }
 
     if (search) {
-        whereParts.push(`(t.title) ILIKE $${idx} AND t.description ILIKE $${idx})`)
+        whereParts.push(`(t.title) ILIKE $${idx} OR t.description ILIKE $${idx})`)
         values.push(`%${search}%`)
         idx++;
     }
