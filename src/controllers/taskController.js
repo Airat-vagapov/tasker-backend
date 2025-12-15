@@ -2,13 +2,12 @@ const taskService = require('../service/taskService')
 
 const getTasks = async (req, res) => {
     try {
-        // const { status, sortBy, order } = req.query
-        // console.log(req.query)
         const filters = {
             status: req.query.status,
             sortBy: req.query.sortBy,
             order: req.query.order,
             search: req.query.search,
+            search_id: req.query.search_id,
         }
         const tasks = await taskService.getAllTasks(filters);
         res.status(200).json({ status: "200", result: tasks.rows });

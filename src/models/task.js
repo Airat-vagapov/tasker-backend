@@ -1,7 +1,6 @@
 const { client } = require("../config/db");
-const { search } = require("../routes/taskRoutes");
 
-const getTasks = async (statusIds, sortField, sortOrder) => {
+const getTasks = async (statusIds, sortField, sortOrder, search, searchId) => {
     const whereParts = []
     const values = []
     let idx = 1
@@ -12,8 +11,14 @@ const getTasks = async (statusIds, sortField, sortOrder) => {
     }
 
     if (search) {
-        whereParts.push(`(t.title) ILIKE $${idx} OR t.description ILIKE $${idx})`)
+        whereParts.push(`(t.title ILIKE $${idx} OR t.description ILIKE $${idx})`)
         values.push(`%${search}%`)
+        idx++;
+    }
+
+    if (searchId) {
+        whereParts.push(`(t.id) = $${idx}`)
+        values.push(Number(searchId));
         idx++;
     }
 
