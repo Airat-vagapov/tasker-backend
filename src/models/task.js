@@ -1,6 +1,6 @@
 const { client } = require("../config/db");
 
-const getTasks = async (statusIds, sortField, sortOrder, search, searchId) => {
+const getTasks = async (statusIds, sortField, sortOrder, search, searchId, priority) => {
     const whereParts = []
     const values = []
     let idx = 1
@@ -17,8 +17,14 @@ const getTasks = async (statusIds, sortField, sortOrder, search, searchId) => {
     }
 
     if (searchId) {
-        whereParts.push(`(t.id) = $${idx}`)
+        whereParts.push(`(t.id) = $${idx}`);
         values.push(Number(searchId));
+        idx++;
+    }
+
+    if (priority) {
+        whereParts.push(`(t.priority) ILIKE $${idx}`);
+        values.push(`%${priority}%`);
         idx++;
     }
 

@@ -26,12 +26,22 @@
             "type": "string"
           },
           {
+            "name": "priority",
+            "in": "query",
+            "type": "string"
+          },
+          {
             "name": "order",
             "in": "query",
             "type": "string"
           },
           {
             "name": "search",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "search_id",
             "in": "query",
             "type": "string"
           }
