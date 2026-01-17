@@ -86,8 +86,8 @@ const updateTask = async (id, task) => {
 }
 
 const deleteTaskById = async (id) => {
-    const res = await client.query(`DELETE FROM tasks WHERE id = $1`, [id]);
-    return res.rows;
+    const res = await client.query(`DELETE FROM tasks WHERE id = $1 RETURNING *`, [id]);
+    return res.rows[0];
 }
 
 const getTasksByStatusId = async (statusIds) => {
