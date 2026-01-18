@@ -13,7 +13,7 @@ const getAllTasks = async (filters) => {
 
     // Обработка поиска
     const search = filters.search ? filters.search.trim().substring(0, 100) : null;
-    const searchId = filters.search_id ? filters.search_id.trim().substring(0, 100) : null;
+    const taskId = filters.task_id ? filters.task_id.trim().substring(0, 100) : null;
     const priority = filters.priority ? filters.priority.trim().substring(0, 100).toLowerCase() : null;
 
     // Обработка параметров сортировки 
@@ -32,7 +32,7 @@ const getAllTasks = async (filters) => {
         : 'DESC';
 
 
-    return await taskModel.getTasks(statusIds, sortField, sortOrder, search, searchId, priority)
+    return await taskModel.getTasks(statusIds, sortField, sortOrder, search, taskId, priority)
 }
 
 const addTask = async (data) => {

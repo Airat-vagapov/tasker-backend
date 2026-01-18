@@ -1,6 +1,6 @@
 const { client } = require("../config/db");
 
-const getTasks = async (statusIds, sortField, sortOrder, search, searchId, priority) => {
+const getTasks = async (statusIds, sortField, sortOrder, search, taskId, priority) => {
     const whereParts = []
     const values = []
     let idx = 1
@@ -16,9 +16,9 @@ const getTasks = async (statusIds, sortField, sortOrder, search, searchId, prior
         idx++;
     }
 
-    if (searchId) {
+    if (taskId) {
         whereParts.push(`(t.id) = $${idx}`);
-        values.push(Number(searchId));
+        values.push(Number(taskId));
         idx++;
     }
 

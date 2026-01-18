@@ -8,11 +8,9 @@ const getTasks = async (req, res) => {
             priority: req.query.priority,
             order: req.query.order,
             search: req.query.search,
-            search_id: req.query.search_id,
+            task_id: req.query.task_id,
         }
-        console.log('search_id', filters.search_id)
         const tasks = await taskService.getAllTasks(filters);
-        console.log('result', tasks.rows)
         res.status(200).json({ status: "200", result: tasks.rows });
     } catch (err) {
         console.log(err);

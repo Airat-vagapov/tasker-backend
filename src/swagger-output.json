@@ -41,7 +41,7 @@
             "type": "string"
           },
           {
-            "name": "search_id",
+            "name": "task_id",
             "in": "query",
             "type": "string"
           }
