@@ -1,7 +1,6 @@
 const taskModel = require('../models/task');
 
 const getAllTasks = async (filters) => {
-    console.log('status in service', filters.status)
     // Обработка статусов
     let statusIds = null
     if (filters.status) {
