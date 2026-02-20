@@ -4,10 +4,15 @@
   "description": "",
   "main": "app.js",
   "scripts": {
+    "env:use-local": "cp .env.local .env",
+    "env:use-supabase": "cp .env.production .env",
     "generate-docs": "node src/generate-docs.js",
     "predev": "npm run generate-docs",
     "dev": "nodemon src/app.js",
-    "start": "node src/app.js"
+    "start": "node src/app.js",
+    "docker:up": "docker compose --env-file .env.docker up --build",
+    "docker:down": "docker compose --env-file .env.docker down",
+    "docker:logs": "docker compose --env-file .env.docker logs -f backend"
   },
   "keywords": [],
   "author": "",

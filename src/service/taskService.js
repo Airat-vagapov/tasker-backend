@@ -14,6 +14,10 @@ const getAllTasks = async (filters) => {
     const search = filters.search ? filters.search.trim().substring(0, 100) : null;
     const taskId = filters.task_id ? filters.task_id.trim().substring(0, 100) : null;
     const priority = filters.priority ? filters.priority.trim().substring(0, 100).toLowerCase() : null;
+    const limit = Math.min(Math.max(Number(filters.limit) || 100, 1), 500);
+    const page = Math.max(Number(filters.page) || 1, 1);
+    const offset = (page - 1) * limit;
+    const requestId = filters.requestId;
 
     // Обработка параметров сортировки 
     const allowedSortFields = {
@@ -31,7 +35,7 @@ const getAllTasks = async (filters) => {
         : 'DESC';
 
 
-    return await taskModel.getTasks(statusIds, sortField, sortOrder, search, taskId, priority)
+    return await taskModel.getTasks(statusIds, sortField, sortOrder, search, taskId, priority, limit, offset, requestId)
 }
 
 const addTask = async (data) => {
@@ -40,6 +44,13 @@ const addTask = async (data) => {
     }
     if (!data || !data.priority || data.priority.trim() === '') {
         throw new Error('Task priority is required')
+    }
+    if (data.status_id !== undefined && data.status_id !== null) {
+        const parsedStatusId = Number(data.status_id);
+        if (!Number.isInteger(parsedStatusId) || parsedStatusId <= 0) {
+            throw new Error('status_id must be a positive integer')
+        }
+        data.status_id = parsedStatusId;
     }
     return await taskModel.createTask(data)
 }
@@ -59,4 +70,8 @@ const deleteTaskById = async (id) => {
 const getTaskByStatus = async (statuses) => {
     return await taskModel.getTasksByStatusId(statuses)
 }
-module.exports = { getAllTasks, addTask, getTaskById, updateTask, deleteTaskById, getTaskByStatus }
+
+const getTaskStats = async () => {
+    return await taskModel.getTaskStats()
+}
+module.exports = { getAllTasks, addTask, getTaskById, updateTask, deleteTaskById, getTaskByStatus, getTaskStats }
