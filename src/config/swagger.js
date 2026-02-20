@@ -10,6 +10,14 @@ const generateSwaggerDocs = () => {
         },
         host: 'localhost:8080',
         schemes: ['http'],
+        securityDefinitions: {
+            bearerAuth: {
+                type: 'apiKey',
+                name: 'Authorization',
+                in: 'header',
+                description: 'Enter JWT token as: Bearer <token>'
+            }
+        }
     }
 
     const outputFile = './swagger-output.json';

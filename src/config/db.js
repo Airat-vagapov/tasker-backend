@@ -59,6 +59,43 @@ const createTables = async () => {
         console.log('Базовые статусы добавлены или уже существуют');
 
         await client.query({
+            text: `CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            username VARCHAR(30) UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            role VARCHAR(20) NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'admin')),
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );`,
+        });
+        console.log('Таблица USERS успешно создана или уже есть существующая');
+
+        await client.query({
+            text: `CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);`,
+        });
+
+        await client.query({
+            text: `CREATE TABLE IF NOT EXISTS auth_sessions (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            refresh_token_hash TEXT NOT NULL,
+            expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            revoked_at TIMESTAMP WITH TIME ZONE,
+            user_agent TEXT,
+            ip VARCHAR(64)
+        );`,
+        });
+        console.log('Таблица AUTH_SESSIONS успешно создана или уже есть существующая');
+
+        await client.query({
+            text: `CREATE INDEX IF NOT EXISTS idx_auth_sessions_user_id ON auth_sessions(user_id);`,
+        });
+        await client.query({
+            text: `CREATE INDEX IF NOT EXISTS idx_auth_sessions_expires_at ON auth_sessions(expires_at);`,
+        });
+
+        await client.query({
             text: `CREATE TABLE IF NOT EXISTS tasks (
             id SERIAL PRIMARY KEY,
             title TEXT NOT NULL,

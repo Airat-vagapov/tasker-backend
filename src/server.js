@@ -2,7 +2,9 @@ const { port } = require("./config/env");
 const { connectDB } = require("./config/db");
 const express = require("express");
 const taskRouter = require("./routes/taskRoutes");
+const authRouter = require("./routes/authRoutes");
 const cors = require('cors');
+const cookieParser = require("cookie-parser");
 const swaggerUi = require('swagger-ui-express');
 const swaggerFile = require('./swagger-output.json')
 
@@ -19,11 +21,14 @@ async function startServer(app) {
         app.use(
             cors({
                 origin: "http://localhost:3000",
+                credentials: true,
             })
         );
 
         app.use(express.json());
+        app.use(cookieParser());
 
+        app.use("/auth", authRouter);
         app.use("/", taskRouter);
 
         // Swagger docs

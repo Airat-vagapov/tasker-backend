@@ -34,6 +34,8 @@ This command builds and starts:
 
 - Tasks: `http://localhost:8080/tasks?page=1&limit=20`
 - Swagger: `http://localhost:8080/api-docs`
+- Auth register: `POST http://localhost:8080/auth/register`
+- Auth login: `POST http://localhost:8080/auth/login`
 
 ### 3) View backend logs
 
@@ -62,3 +64,39 @@ Docker Compose uses `/Users/airatvagapov/Development/My_projects/tasker-backend/
 - `POSTGRES_PASSWORD`
 
 `DB_URL`, `PORT`, `DB_BOOTSTRAP=true`, and `DB_SSL=false` are defined directly in `docker-compose.yml` for the backend service.
+
+## Auth flow (JWT + Refresh Cookie)
+
+1. Register user:
+
+```bash
+curl -X POST http://localhost:8080/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin12345","role":"admin"}'
+```
+
+2. Login and store cookie:
+
+```bash
+curl -i -X POST http://localhost:8080/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin12345"}' \
+  -c cookies.txt
+```
+
+3. Refresh access token using cookie:
+
+```bash
+curl -X POST http://localhost:8080/auth/refresh -b cookies.txt -c cookies.txt
+```
+
+4. Logout (invalidates refresh session):
+
+```bash
+curl -X POST http://localhost:8080/auth/logout -b cookies.txt
+```
+
+## Role policy for tasks
+
+- `GET /tasks`, `GET /task/:id`, `GET /tasks/status`, `GET /tasks/stats`: `user` or `admin`
+- `POST /task`, `POST /task/:id`, `DELETE /task/:id`: `admin`
