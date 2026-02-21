@@ -1,18 +1,20 @@
 const { client } = require("../config/db");
 
-const createUser = async (username, passwordHash, role = "user") => {
+const createUser = async (username, passwordHash, role = "user", firstName, lastName) => {
     const query = `
-        INSERT INTO users (username, password_hash, role)
-        VALUES ($1, $2, $3)
-        RETURNING id, username, role, created_at;
+        INSERT INTO users (username, password_hash, role, first_name, last_name)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING id, username, role, first_name AS "firstName", last_name AS "lastName", created_at;
     `;
-    const res = await client.query(query, [username, passwordHash, role]);
+    const res = await client.query(query, [username, passwordHash, role, firstName, lastName]);
     return res.rows[0];
 };
 
 const findUserByUsername = async (username) => {
     const query = `
         SELECT id, username, password_hash, role
+             , first_name AS "firstName"
+             , last_name AS "lastName"
         FROM users
         WHERE username = $1
         LIMIT 1;
@@ -24,6 +26,8 @@ const findUserByUsername = async (username) => {
 const findUserById = async (id) => {
     const query = `
         SELECT id, username, role
+             , first_name AS "firstName"
+             , last_name AS "lastName"
         FROM users
         WHERE id = $1
         LIMIT 1;

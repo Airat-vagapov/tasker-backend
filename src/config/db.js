@@ -41,6 +41,16 @@ const createTables = async () => {
 
         await client.query({
             text: `
+                SELECT setval(
+                    pg_get_serial_sequence('statuses', 'id'),
+                    COALESCE((SELECT MAX(id) FROM statuses), 1),
+                    true
+                );
+            `,
+        });
+
+        await client.query({
+            text: `
                 INSERT INTO statuses (name)
                 VALUES ('todo'), ('in_progress'), ('done')
                 ON CONFLICT (name) DO NOTHING;
@@ -63,12 +73,21 @@ const createTables = async () => {
             id SERIAL PRIMARY KEY,
             username VARCHAR(30) UNIQUE NOT NULL,
             password_hash TEXT NOT NULL,
+            first_name VARCHAR(50),
+            last_name VARCHAR(50),
             role VARCHAR(20) NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'admin')),
             created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         );`,
         });
         console.log('Таблица USERS успешно создана или уже есть существующая');
+
+        await client.query({
+            text: `ALTER TABLE users ADD COLUMN IF NOT EXISTS first_name VARCHAR(50);`,
+        });
+        await client.query({
+            text: `ALTER TABLE users ADD COLUMN IF NOT EXISTS last_name VARCHAR(50);`,
+        });
 
         await client.query({
             text: `CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);`,

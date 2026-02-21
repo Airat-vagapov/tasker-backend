@@ -55,6 +55,27 @@ npm run docker:down
 docker compose --env-file .env.docker down -v
 ```
 
+## Docker: apply backend/db changes
+
+If you changed backend code (including DB bootstrap in `src/config/db.js`), rebuild backend container:
+
+```bash
+docker compose --env-file .env.docker up -d --build backend
+```
+
+Check backend logs (bootstrap should run without errors):
+
+```bash
+docker compose --env-file .env.docker logs -f backend
+```
+
+If you need a clean database from scratch:
+
+```bash
+docker compose --env-file .env.docker down -v
+docker compose --env-file .env.docker up -d --build
+```
+
 ## Docker environment file
 
 Docker Compose uses `/Users/airatvagapov/Development/My_projects/tasker-backend/.env.docker`:
@@ -72,7 +93,7 @@ Docker Compose uses `/Users/airatvagapov/Development/My_projects/tasker-backend/
 ```bash
 curl -X POST http://localhost:8080/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"admin12345","role":"admin"}'
+  -d '{"username":"admin","password":"admin12345","firstName":"Admin","lastName":"User","role":"admin"}'
 ```
 
 2. Login and store cookie:

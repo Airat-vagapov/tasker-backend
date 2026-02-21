@@ -30,6 +30,12 @@ const validateRole = (role) => {
     }
 };
 
+const validateName = (value, fieldLabel) => {
+    if (typeof value !== "string" || value.trim().length < 1 || value.trim().length > 50) {
+        throw new Error(`${fieldLabel} must be a non-empty string up to 50 characters`);
+    }
+};
+
 const hashRefreshToken = (token) => {
     return crypto
         .createHmac("sha256", jwtRefreshSecret)
@@ -69,14 +75,18 @@ const issueSession = async (user, userAgent, ip) => {
             id: user.id,
             username: user.username,
             role: user.role,
+            firstName: user.firstName,
+            lastName: user.lastName,
         },
     };
 };
 
-const register = async ({ username, password, role = "user" }) => {
+const register = async ({ username, password, role = "user", firstName, lastName }) => {
     validateUsername(username);
     validatePassword(password);
     validateRole(role);
+    validateName(firstName, "First name");
+    validateName(lastName, "Last name");
 
     const existingUser = await authModel.findUserByUsername(username);
     if (existingUser) {
@@ -86,12 +96,20 @@ const register = async ({ username, password, role = "user" }) => {
     }
 
     const passwordHash = await bcrypt.hash(password, 12);
-    const createdUser = await authModel.createUser(username, passwordHash, role);
+    const createdUser = await authModel.createUser(
+        username,
+        passwordHash,
+        role,
+        firstName.trim(),
+        lastName.trim()
+    );
 
     return {
         id: createdUser.id,
         username: createdUser.username,
         role: createdUser.role,
+        firstName: createdUser.firstName,
+        lastName: createdUser.lastName,
     };
 };
 
