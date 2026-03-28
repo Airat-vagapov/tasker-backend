@@ -1,8 +1,8 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "My API",
-    "description": "API Documentation",
+    "title": "Tasker API",
+    "description": "REST API for task management",
     "version": "1.0.0"
   },
   "host": "localhost:8080",
@@ -10,168 +10,379 @@
   "schemes": [
     "http"
   ],
+  "tags": [
+    {
+      "name": "Tasks",
+      "description": "Task management endpoints"
+    }
+  ],
+  "definitions": {
+    "Task": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer", "example": 1 },
+        "title": { "type": "string", "example": "Fix login bug" },
+        "description": { "type": "string", "example": "Users can't log in with Google OAuth" },
+        "priority": { "type": "string", "enum": ["low", "medium", "high"], "example": "high" },
+        "status_id": { "type": "integer", "example": 1 },
+        "status": { "type": "string", "example": "todo" },
+        "created_at": { "type": "string", "format": "date-time" },
+        "updated_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "CreateTaskBody": {
+      "type": "object",
+      "required": ["title", "priority"],
+      "properties": {
+        "title": { "type": "string", "example": "Fix login bug" },
+        "description": { "type": "string", "example": "Users can't log in with Google OAuth" },
+        "priority": { "type": "string", "enum": ["low", "medium", "high"], "example": "medium" },
+        "status_id": { "type": "integer", "example": 1, "description": "Optional. Defaults to first status in DB." }
+      }
+    },
+    "UpdateTaskBody": {
+      "type": "object",
+      "required": ["task"],
+      "properties": {
+        "task": {
+          "type": "object",
+          "description": "Fields to update (partial update supported)",
+          "properties": {
+            "title": { "type": "string", "example": "Updated title" },
+            "description": { "type": "string", "example": "Updated description" },
+            "priority": { "type": "string", "enum": ["low", "medium", "high"], "example": "low" },
+            "status_id": { "type": "integer", "example": 2 }
+          }
+        }
+      }
+    },
+    "SuccessResponse": {
+      "type": "object",
+      "properties": {
+        "status": { "type": "string", "example": "200" },
+        "result": {}
+      }
+    },
+    "ErrorResponse": {
+      "type": "object",
+      "properties": {
+        "status": { "type": "string", "example": "500" },
+        "message": { "type": "string", "example": "Internal server error" }
+      }
+    },
+    "TaskStats": {
+      "type": "object",
+      "properties": {
+        "counts_by_status": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "status_id": { "type": "integer", "example": 1 },
+              "status": { "type": "string", "example": "todo" },
+              "tasks_count": { "type": "integer", "example": 5 }
+            }
+          }
+        },
+        "oldest_task": { "$ref": "#/definitions/Task" },
+        "newest_task": { "$ref": "#/definitions/Task" }
+      }
+    }
+  },
   "paths": {
     "/tasks": {
       "get": {
-        "description": "",
+        "tags": ["Tasks"],
+        "summary": "Get all tasks",
+        "description": "Returns a paginated list of tasks with optional filtering and sorting",
         "parameters": [
           {
             "name": "status",
             "in": "query",
-            "type": "string"
+            "description": "Comma-separated list of status IDs to filter by (e.g. '1,2')",
+            "type": "string",
+            "example": "1,2"
           },
           {
             "name": "sortBy",
             "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "priority",
-            "in": "query",
-            "type": "string"
+            "description": "Field to sort by",
+            "type": "string",
+            "enum": ["id", "title", "priority", "status", "created_at"],
+            "default": "id"
           },
           {
             "name": "order",
             "in": "query",
-            "type": "string"
+            "description": "Sort direction",
+            "type": "string",
+            "enum": ["asc", "desc"],
+            "default": "desc"
+          },
+          {
+            "name": "priority",
+            "in": "query",
+            "description": "Filter by priority (partial match)",
+            "type": "string",
+            "enum": ["low", "medium", "high"]
           },
           {
             "name": "search",
             "in": "query",
+            "description": "Search string matched against title and description (case-insensitive)",
             "type": "string"
           },
           {
             "name": "task_id",
             "in": "query",
-            "type": "string"
+            "description": "Filter by exact task ID",
+            "type": "integer"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number (1-based)",
+            "type": "integer",
+            "default": 1,
+            "minimum": 1
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of tasks per page (1–500)",
+            "type": "integer",
+            "default": 100,
+            "minimum": 1,
+            "maximum": 500
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "List of tasks",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": { "type": "string", "example": "200" },
+                "result": {
+                  "type": "array",
+                  "items": { "$ref": "#/definitions/Task" }
+                }
+              }
+            }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal server error",
+            "schema": { "$ref": "#/definitions/ErrorResponse" }
+          },
+          "503": {
+            "description": "Database host unreachable",
+            "schema": { "$ref": "#/definitions/ErrorResponse" }
+          },
+          "504": {
+            "description": "Database query timeout",
+            "schema": { "$ref": "#/definitions/ErrorResponse" }
           }
         }
       }
     },
     "/task": {
       "post": {
-        "description": "",
+        "tags": ["Tasks"],
+        "summary": "Create a task",
+        "description": "Creates a new task. If status_id is not provided, defaults to the first status in the database.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": { "$ref": "#/definitions/CreateTaskBody" }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Task created",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": { "type": "string", "example": "200" },
+                "result": { "type": "string", "example": "ok" }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error (title or priority missing, invalid status_id)",
+            "schema": { "$ref": "#/definitions/ErrorResponse" }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal server error",
+            "schema": { "$ref": "#/definitions/ErrorResponse" }
           }
         }
       }
     },
     "/task/{id}": {
       "get": {
-        "description": "",
+        "tags": ["Tasks"],
+        "summary": "Get task by ID",
+        "description": "Returns a single task by its ID",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
+            "description": "Task ID",
+            "type": "integer"
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Task found",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": { "type": "string", "example": "200" },
+                "result": { "$ref": "#/definitions/Task" }
+              }
+            }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal server error",
+            "schema": { "$ref": "#/definitions/ErrorResponse" }
           }
         }
       },
       "post": {
-        "description": "",
+        "tags": ["Tasks"],
+        "summary": "Update task",
+        "description": "Updates task fields. Only fields present in the 'task' object are updated (partial update).",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
+            "description": "Task ID",
+            "type": "integer"
           },
           {
             "name": "body",
             "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "task": {
-                  "example": "any"
-                }
-              }
-            }
+            "required": true,
+            "schema": { "$ref": "#/definitions/UpdateTaskBody" }
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Task updated, returns updated task",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": { "type": "string", "example": "200" },
+                "result": {
+                  "type": "array",
+                  "items": { "$ref": "#/definitions/Task" }
+                }
+              }
+            }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal server error",
+            "schema": { "$ref": "#/definitions/ErrorResponse" }
           }
         }
       },
       "delete": {
-        "description": "",
+        "tags": ["Tasks"],
+        "summary": "Delete task",
+        "description": "Deletes a task by ID. Returns the deleted task object.",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
+            "description": "Task ID",
+            "type": "integer"
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Task deleted, returns the deleted task",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": { "type": "string", "example": "200" },
+                "result": { "$ref": "#/definitions/Task" }
+              }
+            }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal server error",
+            "schema": { "$ref": "#/definitions/ErrorResponse" }
           }
         }
       }
     },
     "/tasks/status/": {
       "get": {
-        "description": "",
+        "tags": ["Tasks"],
+        "summary": "Get tasks by status IDs",
+        "description": "Returns all tasks matching one or more status IDs. Ordered by task ID descending.",
         "parameters": [
           {
             "name": "id",
             "in": "query",
-            "type": "string"
+            "required": true,
+            "description": "Comma-separated list of status IDs (e.g. '1,2,3')",
+            "type": "string",
+            "example": "1,2"
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "List of matching tasks",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": { "type": "string", "example": "200" },
+                "result": {
+                  "type": "array",
+                  "items": { "$ref": "#/definitions/Task" }
+                }
+              }
+            }
           },
           "400": {
-            "description": "Bad Request"
+            "description": "Status ID is required",
+            "schema": { "$ref": "#/definitions/ErrorResponse" }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal server error",
+            "schema": { "$ref": "#/definitions/ErrorResponse" }
           }
         }
       }
     },
     "/tasks/stats": {
       "get": {
-        "description": "",
+        "tags": ["Tasks"],
+        "summary": "Get task statistics",
+        "description": "Returns task counts grouped by status, plus the oldest and newest task",
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Task statistics",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": { "type": "string", "example": "200" },
+                "data": {
+                  "type": "array",
+                  "items": { "$ref": "#/definitions/TaskStats" }
+                }
+              }
+            }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal server error",
+            "schema": { "$ref": "#/definitions/ErrorResponse" }
           }
         }
       }
