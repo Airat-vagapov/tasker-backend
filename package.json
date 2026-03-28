@@ -9,6 +9,7 @@
     "generate-docs": "node src/generate-docs.js",
     "predev": "npm run generate-docs",
     "dev": "nodemon src/app.js",
+    "prestart": "npm run generate-docs",
     "start": "node src/app.js",
     "docker:up": "docker compose --env-file .env.docker up --build",
     "docker:down": "docker compose --env-file .env.docker down",
