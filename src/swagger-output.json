@@ -10,13 +10,67 @@
   "schemes": [
     "http"
   ],
+  "securityDefinitions": {
+    "BearerAuth": {
+      "type": "apiKey",
+      "in": "header",
+      "name": "Authorization",
+      "description": "JWT access token. Format: Bearer <token>"
+    }
+  },
   "tags": [
+    {
+      "name": "Auth",
+      "description": "Authentication and session management"
+    },
     {
       "name": "Tasks",
       "description": "Task management endpoints"
     }
   ],
   "definitions": {
+    "User": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer", "example": 1 },
+        "username": { "type": "string", "example": "john_doe" },
+        "role": { "type": "string", "enum": ["user", "admin"], "example": "user" },
+        "firstName": { "type": "string", "example": "John" },
+        "lastName": { "type": "string", "example": "Doe" }
+      }
+    },
+    "RegisterBody": {
+      "type": "object",
+      "required": ["username", "password", "firstName", "lastName"],
+      "properties": {
+        "username": {
+          "type": "string",
+          "example": "john_doe",
+          "description": "3–30 chars, alphanumeric + _ . -"
+        },
+        "password": {
+          "type": "string",
+          "example": "securePass123",
+          "description": "Minimum 8 characters"
+        },
+        "firstName": { "type": "string", "example": "John", "description": "1–50 chars" },
+        "lastName": { "type": "string", "example": "Doe", "description": "1–50 chars" },
+        "role": {
+          "type": "string",
+          "enum": ["user", "admin"],
+          "default": "user",
+          "description": "Optional. Defaults to 'user'."
+        }
+      }
+    },
+    "LoginBody": {
+      "type": "object",
+      "required": ["username", "password"],
+      "properties": {
+        "username": { "type": "string", "example": "john_doe" },
+        "password": { "type": "string", "example": "securePass123" }
+      }
+    },
     "Task": {
       "type": "object",
       "properties": {
@@ -56,14 +110,13 @@
         }
       }
     },
-    "SuccessResponse": {
+    "ErrorResponse": {
       "type": "object",
       "properties": {
-        "status": { "type": "string", "example": "200" },
-        "result": {}
+        "message": { "type": "string", "example": "Invalid credentials" }
       }
     },
-    "ErrorResponse": {
+    "TaskErrorResponse": {
       "type": "object",
       "properties": {
         "status": { "type": "string", "example": "500" },
@@ -92,74 +145,130 @@
   "paths": {
     "/auth/register": {
       "post": {
-        "description": "",
+        "tags": ["Auth"],
+        "summary": "Register a new user",
+        "description": "Creates a new user account. Username must be unique.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": { "$ref": "#/definitions/RegisterBody" }
+          }
+        ],
         "responses": {
           "201": {
-            "description": "Created"
+            "description": "User created",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "user": { "$ref": "#/definitions/User" }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error (missing fields, invalid format)",
+            "schema": { "$ref": "#/definitions/ErrorResponse" }
+          },
+          "409": {
+            "description": "Username already exists",
+            "schema": { "$ref": "#/definitions/ErrorResponse" }
           }
         }
       }
     },
     "/auth/login": {
       "post": {
-        "description": "",
+        "tags": ["Auth"],
+        "summary": "Log in",
+        "description": "Authenticates user and returns a JWT access token. Sets an HTTP-only `refreshToken` cookie (7 days by default).",
         "parameters": [
           {
-            "name": "user-agent",
-            "in": "header",
-            "type": "string"
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": { "$ref": "#/definitions/LoginBody" }
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Login successful",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "accessToken": { "type": "string", "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." },
+                "user": { "$ref": "#/definitions/User" }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "schema": { "$ref": "#/definitions/ErrorResponse" }
           }
         }
       }
     },
     "/auth/refresh": {
       "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "user-agent",
-            "in": "header",
-            "type": "string"
-          }
-        ],
+        "tags": ["Auth"],
+        "summary": "Refresh access token",
+        "description": "Issues a new access token using the `refreshToken` cookie. Rotates the refresh token (old session is revoked).",
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "New access token issued",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "accessToken": { "type": "string", "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." }
+              }
+            }
+          },
+          "401": {
+            "description": "Refresh token missing or invalid",
+            "schema": { "$ref": "#/definitions/ErrorResponse" }
           }
         }
       }
     },
     "/auth/logout": {
       "post": {
-        "description": "",
+        "tags": ["Auth"],
+        "summary": "Log out",
+        "description": "Revokes the current session and clears the `refreshToken` cookie. Always returns 200.",
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Logged out",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "ok": { "type": "boolean", "example": true }
+              }
+            }
           }
         }
       }
     },
     "/auth/me": {
       "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
-          }
-        ],
+        "tags": ["Auth"],
+        "summary": "Get current user",
+        "description": "Returns the authenticated user's info extracted from the JWT.",
+        "security": [{ "BearerAuth": [] }],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Current user info",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "integer", "example": 1 },
+                "username": { "type": "string", "example": "john_doe" },
+                "role": { "type": "string", "example": "user" }
+              }
+            }
           },
           "401": {
-            "description": "Unauthorized"
+            "description": "Missing or invalid access token",
+            "schema": { "$ref": "#/definitions/ErrorResponse" }
           }
         }
       }
@@ -168,13 +277,9 @@
       "get": {
         "tags": ["Tasks"],
         "summary": "Get all tasks",
-        "description": "Returns a paginated list of tasks with optional filtering and sorting",
+        "description": "Returns a paginated list of tasks with optional filtering and sorting.",
+        "security": [{ "BearerAuth": [] }],
         "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
-          },
           {
             "name": "status",
             "in": "query",
@@ -249,24 +354,11 @@
               }
             }
           },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "500": {
-            "description": "Internal server error",
-            "schema": { "$ref": "#/definitions/ErrorResponse" }
-          },
-          "503": {
-            "description": "Database host unreachable",
-            "schema": { "$ref": "#/definitions/ErrorResponse" }
-          },
-          "504": {
-            "description": "Database query timeout",
-            "schema": { "$ref": "#/definitions/ErrorResponse" }
-          }
+          "401": { "description": "Unauthorized", "schema": { "$ref": "#/definitions/ErrorResponse" } },
+          "403": { "description": "Forbidden", "schema": { "$ref": "#/definitions/ErrorResponse" } },
+          "500": { "description": "Internal server error", "schema": { "$ref": "#/definitions/TaskErrorResponse" } },
+          "503": { "description": "Database host unreachable", "schema": { "$ref": "#/definitions/TaskErrorResponse" } },
+          "504": { "description": "Database query timeout", "schema": { "$ref": "#/definitions/TaskErrorResponse" } }
         }
       }
     },
@@ -275,6 +367,7 @@
         "tags": ["Tasks"],
         "summary": "Create a task",
         "description": "Creates a new task. If status_id is not provided, defaults to the first status in the database.",
+        "security": [{ "BearerAuth": [] }],
         "parameters": [
           {
             "name": "body",
@@ -294,20 +387,10 @@
               }
             }
           },
-          "400": {
-            "description": "Validation error (title or priority missing, invalid status_id)",
-            "schema": { "$ref": "#/definitions/ErrorResponse" }
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "500": {
-            "description": "Internal server error",
-            "schema": { "$ref": "#/definitions/ErrorResponse" }
-          }
+          "400": { "description": "Validation error (title or priority missing, invalid status_id)", "schema": { "$ref": "#/definitions/TaskErrorResponse" } },
+          "401": { "description": "Unauthorized", "schema": { "$ref": "#/definitions/ErrorResponse" } },
+          "403": { "description": "Forbidden", "schema": { "$ref": "#/definitions/ErrorResponse" } },
+          "500": { "description": "Internal server error", "schema": { "$ref": "#/definitions/TaskErrorResponse" } }
         }
       }
     },
@@ -315,7 +398,8 @@
       "get": {
         "tags": ["Tasks"],
         "summary": "Get task by ID",
-        "description": "Returns a single task by its ID",
+        "description": "Returns a single task by its ID.",
+        "security": [{ "BearerAuth": [] }],
         "parameters": [
           {
             "name": "id",
@@ -336,22 +420,16 @@
               }
             }
           },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "500": {
-            "description": "Internal server error",
-            "schema": { "$ref": "#/definitions/ErrorResponse" }
-          }
+          "401": { "description": "Unauthorized", "schema": { "$ref": "#/definitions/ErrorResponse" } },
+          "403": { "description": "Forbidden", "schema": { "$ref": "#/definitions/ErrorResponse" } },
+          "500": { "description": "Internal server error", "schema": { "$ref": "#/definitions/TaskErrorResponse" } }
         }
       },
       "post": {
         "tags": ["Tasks"],
         "summary": "Update task",
         "description": "Updates task fields. Only fields present in the 'task' object are updated (partial update).",
+        "security": [{ "BearerAuth": [] }],
         "parameters": [
           {
             "name": "id",
@@ -359,11 +437,6 @@
             "required": true,
             "description": "Task ID",
             "type": "integer"
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
           },
           {
             "name": "body",
@@ -386,22 +459,16 @@
               }
             }
           },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "500": {
-            "description": "Internal server error",
-            "schema": { "$ref": "#/definitions/ErrorResponse" }
-          }
+          "401": { "description": "Unauthorized", "schema": { "$ref": "#/definitions/ErrorResponse" } },
+          "403": { "description": "Forbidden", "schema": { "$ref": "#/definitions/ErrorResponse" } },
+          "500": { "description": "Internal server error", "schema": { "$ref": "#/definitions/TaskErrorResponse" } }
         }
       },
       "delete": {
         "tags": ["Tasks"],
         "summary": "Delete task",
         "description": "Deletes a task by ID. Returns the deleted task object.",
+        "security": [{ "BearerAuth": [] }],
         "parameters": [
           {
             "name": "id",
@@ -422,16 +489,9 @@
               }
             }
           },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "500": {
-            "description": "Internal server error",
-            "schema": { "$ref": "#/definitions/ErrorResponse" }
-          }
+          "401": { "description": "Unauthorized", "schema": { "$ref": "#/definitions/ErrorResponse" } },
+          "403": { "description": "Forbidden", "schema": { "$ref": "#/definitions/ErrorResponse" } },
+          "500": { "description": "Internal server error", "schema": { "$ref": "#/definitions/TaskErrorResponse" } }
         }
       }
     },
@@ -440,12 +500,8 @@
         "tags": ["Tasks"],
         "summary": "Get tasks by status IDs",
         "description": "Returns all tasks matching one or more status IDs. Ordered by task ID descending.",
+        "security": [{ "BearerAuth": [] }],
         "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
-          },
           {
             "name": "id",
             "in": "query",
@@ -469,20 +525,10 @@
               }
             }
           },
-          "400": {
-            "description": "Status ID is required",
-            "schema": { "$ref": "#/definitions/ErrorResponse" }
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "500": {
-            "description": "Internal server error",
-            "schema": { "$ref": "#/definitions/ErrorResponse" }
-          }
+          "400": { "description": "Status ID is required", "schema": { "$ref": "#/definitions/TaskErrorResponse" } },
+          "401": { "description": "Unauthorized", "schema": { "$ref": "#/definitions/ErrorResponse" } },
+          "403": { "description": "Forbidden", "schema": { "$ref": "#/definitions/ErrorResponse" } },
+          "500": { "description": "Internal server error", "schema": { "$ref": "#/definitions/TaskErrorResponse" } }
         }
       }
     },
@@ -490,7 +536,8 @@
       "get": {
         "tags": ["Tasks"],
         "summary": "Get task statistics",
-        "description": "Returns task counts grouped by status, plus the oldest and newest task",
+        "description": "Returns task counts grouped by status, plus the oldest and newest task.",
+        "security": [{ "BearerAuth": [] }],
         "responses": {
           "200": {
             "description": "Task statistics",
@@ -505,16 +552,9 @@
               }
             }
           },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "500": {
-            "description": "Internal server error",
-            "schema": { "$ref": "#/definitions/ErrorResponse" }
-          }
+          "401": { "description": "Unauthorized", "schema": { "$ref": "#/definitions/ErrorResponse" } },
+          "403": { "description": "Forbidden", "schema": { "$ref": "#/definitions/ErrorResponse" } },
+          "500": { "description": "Internal server error", "schema": { "$ref": "#/definitions/TaskErrorResponse" } }
         }
       }
     }

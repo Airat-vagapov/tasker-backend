@@ -49,13 +49,13 @@ const createTables = async () => {
             `,
         });
 
-        await client.query({
-            text: `
-                INSERT INTO statuses (name)
-                VALUES ('todo'), ('in_progress'), ('done')
-                ON CONFLICT (name) DO NOTHING;
-            `,
-        });
+        // await client.query({
+        //     text: `
+        //         INSERT INTO statuses (name)
+        //         VALUES ('todo'), ('in_progress'), ('done')
+        //         ON CONFLICT (name) DO NOTHING;
+        //     `,
+        // });
 
         await client.query({
             text: `

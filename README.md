@@ -117,6 +117,81 @@ curl -X POST http://localhost:8080/auth/refresh -b cookies.txt -c cookies.txt
 curl -X POST http://localhost:8080/auth/logout -b cookies.txt
 ```
 
+## Frontend integration guide
+
+Base URL:
+
+- `http://localhost:8080`
+
+Auth endpoints:
+
+- `POST /auth/register`
+- `POST /auth/login`
+- `POST /auth/refresh`
+- `POST /auth/logout`
+- `GET /auth/me`
+
+Register request body:
+
+```json
+{
+  "username": "admin",
+  "password": "admin12345",
+  "firstName": "Admin",
+  "lastName": "User",
+  "role": "user"
+}
+```
+
+Login request body:
+
+```json
+{
+  "username": "admin",
+  "password": "admin12345"
+}
+```
+
+Login success response:
+
+```json
+{
+  "accessToken": "<jwt>",
+  "user": {
+    "id": 1,
+    "username": "admin",
+    "role": "user",
+    "firstName": "Admin",
+    "lastName": "User"
+  }
+}
+```
+
+Important for frontend:
+
+- Send login/refresh/logout requests with credentials (`withCredentials: true` in Axios or `credentials: "include"` in fetch).
+- `refreshToken` is stored in `HttpOnly` cookie (frontend cannot read it directly).
+- Store only `accessToken` client-side (memory or secure storage strategy used in your app).
+- Send API requests with header: `Authorization: Bearer <accessToken>`.
+
+## Recommended frontend auth flow
+
+1. Registration:
+   Send `POST /auth/register` with `username`, `password`, `firstName`, `lastName`, optional `role`.
+2. Login:
+   Send `POST /auth/login` with credentials and `credentials: "include"`.
+   Save `accessToken` from response and user profile in app state.
+3. Authorized API calls:
+   Add `Authorization: Bearer <accessToken>` to protected requests.
+4. Auto refresh:
+   If protected request returns `401`, call `POST /auth/refresh` with credentials included.
+   If refresh is successful, update `accessToken` and retry original request once.
+5. Session bootstrap on page reload:
+   If no `accessToken` in memory, call `POST /auth/refresh` once on app startup.
+   If success, continue as authenticated user; if fail, route to login.
+6. Logout:
+   Call `POST /auth/logout` with credentials included, clear local auth state, redirect to login.
+
 ## Role policy for tasks
 
 - `GET /tasks`, `GET /task/:id`, `GET /tasks/status`, `GET /tasks/stats`: `user` or `admin`

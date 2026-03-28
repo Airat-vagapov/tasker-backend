@@ -90,7 +90,7 @@ const register = async ({ username, password, role = "user", firstName, lastName
 
     const existingUser = await authModel.findUserByUsername(username);
     if (existingUser) {
-        const err = new Error("Username already exists");
+        const err = new Error("Username already exists. Try another username.");
         err.statusCode = 409;
         throw err;
     }
